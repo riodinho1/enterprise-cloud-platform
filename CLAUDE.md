@@ -1,5 +1,9 @@
 # CLAUDE.md — project rules
 
+## About the owner
+
+I am Raymond Okoche Adrian, a Computer Science student and aspiring Cybersecurity & Software Engineer. I hold an Aptech certified networking certificate and have completed an Introduction to Cloud Computing certificate; I am now building toward cloud engineering and cloud security. My interests are cybersecurity, software engineering, Web3, blockchain, smart contract security, and AI. I have built and shipped Incentifi.fun (a Web3 token launch project) and FortyGuard AI (a geospatial intelligence platform analysing urban heat and environmental risk). I work in TypeScript/JavaScript and do not use Python. I want this project to show I can apply security thinking to cloud infrastructure.
+
 These rules come from Section 0 of docs/PROJECT_SPEC.md and override everything else. The full brief lives in docs/PROJECT_SPEC.md; resume state lives in docs/progress.md.
 
 ## 0. NON-NEGOTIABLE RULES (these override everything else)

@@ -1,6 +1,6 @@
 # Enterprise Cloud Infrastructure & Security Platform — Claude Code Brief
 
-You are acting as a senior cloud architect, DevOps engineer, cloud security engineer, and technical lead. I am a Computer Science student starting my cloud journey (I hold an Introduction to Cloud Computing certificate, CCNA certifications, and work as a networking/cybersecurity trainer). I am a front-end developer. I do not know Python, so do not use Python for application code, tooling, or scripts.
+You are acting as a senior cloud architect, DevOps engineer, cloud security engineer, and technical lead. I am Raymond Okoche Adrian, a Computer Science student and aspiring Cybersecurity & Software Engineer. I hold an Aptech certified networking certificate and have completed an Introduction to Cloud Computing certificate; I am now building toward cloud engineering and cloud security. My interests are cybersecurity, software engineering, Web3, blockchain, smart contract security, and AI. I have built and shipped Incentifi.fun (a Web3 token launch project) and FortyGuard AI (a geospatial intelligence platform analysing urban heat and environmental risk). I work in TypeScript/JavaScript and do not use Python. I want this project to show I can apply security thinking to cloud infrastructure. Do not use Python for application code, tooling, or scripts.
 
 This will be the flagship cloud project on my GitHub and LinkedIn. The goal is not "a website hosted in the cloud." The goal is to show I understand how a serious company designs, secures, deploys, monitors, and maintains cloud infrastructure, and that I can explain every part of it.
 
@@ -104,7 +104,7 @@ docs/architecture.md: every component, why it exists, communication, request flo
 Multi-stage Dockerfiles, non-root, minimal images, .dockerignore, healthchecks. docker-compose.yml with web, api, postgres, object storage, ClamAV (if feasible), Prometheus, Grafana. Separate Docker networks so the DB isn't reachable from the frontend — explain how this mirrors cloud subnets. One command to start everything; seed script with local-only demo users. Document why containers, service communication, every env var, common commands.
 
 ## 7. NETWORKING (docs/networking.md)
-Terraform: VPC, public/private/isolated subnets across 2 AZs, route tables, internet gateway, NAT (explain cost and the VPC endpoint alternative for S3), least-privilege security groups (LB → app → DB), no public DB. Beginner-friendly, connected to CCNA concepts (subnetting, routing, ACLs vs stateful firewalls). Map each AWS construct to its local Docker equivalent.
+Terraform: VPC, public/private/isolated subnets across 2 AZs, route tables, internet gateway, NAT (explain cost and the VPC endpoint alternative for S3), least-privilege security groups (LB → app → DB), no public DB. Connected to networking concepts I already know (subnetting, routing, VLANs, ACLs vs stateful firewalls) without over-explaining the basics. Map each AWS construct to its local Docker equivalent.
 
 ## 8. SECURITY (docs/security.md and /security/)
 Least privilege, IAM roles in Terraform, RBAC, password hashing, secrets management (.env locally → AWS Secrets Manager in design), encryption in transit and at rest (explain local vs design), security headers, validation, rate limiting, audit logs, segmentation, private bucket with public access blocked, relevant OWASP Top 10 protections.
@@ -161,7 +161,7 @@ Repo: .gitignore, .env.example, .editorconfig, MIT LICENSE, SECURITY.md, CONTRIB
 
 ## 17. FINAL REVIEW & PORTFOLIO PACKAGE
 Review as a senior engineer: Is it genuinely a cloud project? Realistic architecture? Sound networking? Security holes? Anything unnecessary, misleading, or overstated? Are all status labels accurate? Fix and list changes.
-Then create docs/portfolio-summary.md (honest about local vs designed), docs/linkedin-description.md (only what was implemented and tested; says built and tested locally with AWS designed in Terraform, not deployed), docs/interview-guide.md (likely questions with strong answers I can give in my own words).
+Then create docs/portfolio-summary.md (honest about local vs designed), docs/linkedin-description.md (only what was implemented and tested; says built and tested locally with AWS designed in Terraform, not deployed), docs/interview-guide.md (likely questions with strong answers I can give in my own words). Connect the project to my networking, security and Web3 background where genuinely relevant, but never invent experience I do not have.
 
 ## 18. START NOW
 1. Inspect the environment (Section 1) and report.

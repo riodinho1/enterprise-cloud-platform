@@ -5,11 +5,11 @@ Short, accurate definitions of every term used in this project, with the network
 ## Cloud networking
 
 - **Availability Zone (AZ)**: one or more physical data centres in a region with independent power and networking. Running in two AZs survives the loss of one building.
-- **CIDR block**: an IP range written as address/prefix, for example 10.0.0.0/16. Same notation as CCNA subnetting.
+- **CIDR block**: an IP range written as address/prefix, for example 10.0.0.0/16. Same notation as classless subnetting.
 - **Internet gateway (IGW)**: the VPC's door to the internet. A subnet is "public" only because its route table sends 0.0.0.0/0 to the IGW.
 - **Isolated subnet**: a subnet whose route table has no route to an IGW or NAT. Only reachable from inside the VPC. Where the database lives.
 - **NAT gateway**: lets instances in private subnets start outbound connections (updates, image pulls) while blocking inbound. Billed per hour and per GB. Same idea as PAT/overload NAT on a Cisco edge router.
-- **Network ACL (NACL)**: a stateless allow/deny list on a subnet, evaluated in rule order. Behaves like a router ACL from CCNA: you must allow return traffic explicitly.
+- **Network ACL (NACL)**: a stateless allow/deny list on a subnet, evaluated in rule order. Behaves like a router ACL: you must allow return traffic explicitly.
 - **Private subnet**: a subnet with no direct inbound route from the internet, but with outbound via NAT. Where application containers live.
 - **Public subnet**: a subnet with a route to the IGW. Only the load balancer and NAT gateway live here.
 - **Route table**: per-subnet rules that decide where packets go next. Identical concept to a routing table on a router.

@@ -57,7 +57,7 @@ All recorded with reasons in [architecture.md](architecture.md) Section 11.
 | docs/environment.md | machine, tool versions, install commands, storage image check |
 | docs/requirements.md | functional, security-boundary and non-functional requirements with IDs |
 | docs/architecture.md | both Mermaid diagrams, mapping table, components, flows, boundaries, failures, decisions |
-| docs/glossary.md | every term used, with CCNA mappings |
+| docs/glossary.md | every term used, with networking mappings |
 | docs/progress.md | this file |
 | .gitignore | minimal; expanded in Phase 2 |
 

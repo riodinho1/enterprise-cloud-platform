@@ -62,7 +62,7 @@ Membership of each container in the three Docker networks:
 | prometheus | no | yes | no | none |
 | grafana | yes | yes | no | 3001 |
 
-The rule that matters: **web is not on the data network, so it cannot open a TCP connection to Postgres or SeaweedFS even if it is compromised.** Docker enforces that with separate bridge networks, which is the same idea as putting the database in a subnet that has no route from the public subnet. The CCNA equivalent is a VLAN with no inter-VLAN routing to the database VLAN.
+The rule that matters: **web is not on the data network, so it cannot open a TCP connection to Postgres or SeaweedFS even if it is compromised.** Docker enforces that with separate bridge networks, which is the same idea as putting the database in a subnet that has no route from the public subnet. The switching equivalent is a VLAN with no inter-VLAN route to the database VLAN.
 
 ## 3. AWS target architecture
 
@@ -332,7 +332,7 @@ flowchart LR
 | Secrets | `.env` git-ignored, `.env.example` committed | Secrets Manager, IAM-scoped, never in state or logs |
 | Deploy credentials | none | GitHub OIDC federated role, no stored keys |
 
-Security groups are stateful (return traffic is allowed automatically), like a stateful firewall; network ACLs are stateless, like a router ACL you configured in CCNA. This project uses security groups for the real rules and leaves NACLs at their permissive defaults, which is common practice. [networking.md](networking.md) (Phase 8) goes deeper.
+Security groups are stateful (return traffic is allowed automatically), like a stateful firewall; network ACLs are stateless, like a router ACL. This project uses security groups for the real rules and leaves NACLs at their permissive defaults, which is common practice. [networking.md](networking.md) (Phase 8) goes deeper.
 
 ## 9. Failure scenarios
 
