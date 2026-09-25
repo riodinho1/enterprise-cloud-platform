@@ -1,0 +1,15 @@
+# Minimal Phase 1 ignore list. Expanded in Phase 2 with build output, coverage and Terraform paths.
+
+# secrets
+.env
+.env.*
+!.env.example
+
+# dependencies
+node_modules/
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
