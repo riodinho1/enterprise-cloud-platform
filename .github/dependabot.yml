@@ -1,0 +1,27 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        update-types: ['minor', 'patch']
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  # Enabled in Phase 5 once Dockerfiles exist.
+  # - package-ecosystem: docker
+  #   directory: /apps/api
+  #   schedule:
+  #     interval: weekly
+
+  # Enabled in Phase 8 once Terraform exists.
+  # - package-ecosystem: terraform
+  #   directory: /infrastructure/terraform
+  #   schedule:
+  #     interval: weekly
