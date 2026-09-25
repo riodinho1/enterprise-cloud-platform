@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+package-lock.json
+PROJECT_PROMPT.md
+docs/PROJECT_SPEC.md
+
+# Prose is hand-formatted; Prettier would only add table-padding churn on every docs edit.
+*.md
