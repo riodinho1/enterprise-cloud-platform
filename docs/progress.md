@@ -8,6 +8,8 @@ Resume file for new sessions. Read this, then [PROJECT_SPEC.md](PROJECT_SPEC.md)
 - **Actual money spent**: $0.
 - **Anything running**: nothing persistent. `npm run dev:api` starts the API on port 3000 for development.
 - **Anything deployed**: nothing. Terraform is written from Phase 8 and only ever validated.
+- **Repository**: public at https://github.com/riodinho1/enterprise-cloud-platform, default branch `main`, pushed 2026-09-25. Commits are authored with the riodinho1 noreply address.
+- **Dependabot**: opened three PRs within a minute of the first push (actions/checkout 4→7, actions/setup-node 4→7, typescript 6.0.3→7.0.2). The two Actions bumps passed CI. The TypeScript major is untested and should not be merged without a session that reads its breaking changes.
 
 ## Phase status
 
@@ -36,7 +38,7 @@ Resume file for new sessions. Read this, then [PROJECT_SPEC.md](PROJECT_SPEC.md)
 | `packages/shared` Zod auth schemas | TESTED | 4 Vitest tests pass |
 | `apps/api` `/health` and env validation | TESTED | 3 Vitest + Supertest tests pass; built server answered `curl /health` with 200 |
 | `apps/web` placeholder shell | RUNS LOCALLY (dev server only) | `vite build` succeeds; no screens yet |
-| CI workflow | DESIGNED / NOT DEPLOYED | written; runs only once the repo is pushed to GitHub |
+| CI workflow | TESTED | first run on GitHub-hosted Ubuntu passed (run 36152649886, 2026-09-25, 25 s); Dependabot PR runs also green |
 | Everything else | NOT IMPLEMENTED | see phase table |
 
 ## Toolchain versions pinned on 2026-09-25
