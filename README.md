@@ -45,13 +45,14 @@ Two diagrams, the local-to-AWS mapping table, request flows, security boundaries
 
 ## Local setup
 
-Requires Node 22 or newer. Docker is needed from Phase 5 onwards.
+Requires Node 22 or newer. Docker is needed from Phase 5 onwards. Every example in this repository is one command per line so it works in Windows PowerShell 5.1 (which has no `&&`), Bash and cmd alike.
 
-```bash
+```powershell
 npm ci
-npm run typecheck && npm test
+npm run typecheck
+npm test
 npm run dev:api     # http://localhost:3000/health
-npm run dev:web     # http://localhost:5173 (proxies /api to the API)
+npm run dev:web     # in a second terminal: http://localhost:5173 (proxies /api to the API)
 ```
 
 Copy `.env.example` to `.env` to change ports or log level. Every variable is documented there and validated at startup.
@@ -72,6 +73,7 @@ docs/              architecture, requirements, glossary, progress, phase docs
 - [docs/requirements.md](docs/requirements.md): functional and non-functional requirements with IDs
 - [docs/glossary.md](docs/glossary.md): every term used, with networking mappings
 - [docs/environment.md](docs/environment.md): development machine, tool versions, install commands
+- [docs/design-direction.md](docs/design-direction.md): the visual rules every screen is checked against
 - [docs/progress.md](docs/progress.md): phase status and how to resume
 - [SECURITY.md](SECURITY.md), [CONTRIBUTING.md](CONTRIBUTING.md), [LICENSE](LICENSE)
 

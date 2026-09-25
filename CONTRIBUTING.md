@@ -4,14 +4,14 @@ This is a personal portfolio project, so contributions are mostly future me. The
 
 ## Setup
 
-```bash
+```powershell
 npm ci
 npm run lint
 npm run typecheck
 npm test
 ```
 
-Node 22 or newer (see `.nvmrc`). No Python anywhere in the project.
+Node 22 or newer (see `.nvmrc`). No Python anywhere in the project. Command examples are written one per line so they work in Windows PowerShell 5.1, which has no `&&`.
 
 ## Commits
 
@@ -30,7 +30,7 @@ Types: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci`, `build`, `infra
 - Nothing that costs money or needs a cloud account. Terraform is validated, never planned or applied.
 - No secrets in git. `.env` is ignored; `.env.example` documents every variable.
 - Every claim in the docs carries one of the status labels from `CLAUDE.md`: RUNS LOCALLY, TESTED, SIMULATED, DESIGNED / NOT DEPLOYED, NOT IMPLEMENTED.
-- Lint, type-check and tests pass before a commit lands on `master`.
+- Lint, type-check and tests pass before a commit lands on `main`.
 
 ## Pull requests
 

@@ -21,4 +21,4 @@ Open a GitHub issue titled `security:` with a description and reproduction steps
 
 ## Supported versions
 
-Only the `master` branch.
+Only the `main` branch.
