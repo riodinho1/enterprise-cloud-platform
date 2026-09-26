@@ -1,5 +1,5 @@
 # Phase 2 skeleton: install, lint, type-check, test, build.
-# Phase 3 adds a Postgres service container for API tests.
+# Phase 3: PostgreSQL service container so API tests run against a real database.
 # Phase 10 adds security scans (npm audit, CodeQL, gitleaks, Trivy, Terraform fmt/validate/checkov) and Docker builds.
 name: CI
 
@@ -27,6 +27,28 @@ jobs:
     name: Lint, type-check, test, build
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: ecp
+          # Throwaway credential for a container that lives for one run and is reachable
+          # only from this job. It is not a secret, so it does not need to be one.
+          POSTGRES_PASSWORD: ci-${{ github.run_id }}
+          POSTGRES_DB: ecp_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ecp -d ecp_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://ecp:ci-${{ github.run_id }}@127.0.0.1:5432/ecp_test
+      TEST_DATABASE_URL: postgresql://ecp:ci-${{ github.run_id }}@127.0.0.1:5432/ecp_test
+
     steps:
       - uses: actions/checkout@v7
 
@@ -36,6 +58,10 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      # Generated fresh for every run; never a committed value.
+      - name: Generate a JWT secret for this run
+        run: echo "JWT_ACCESS_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
 
       - run: npm run lint
 

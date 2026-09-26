@@ -7,3 +7,6 @@ docs/PROJECT_SPEC.md
 
 # Prose is hand-formatted; Prettier would only add table-padding churn on every docs edit.
 *.md
+
+# prisma generated client
+**/generated/

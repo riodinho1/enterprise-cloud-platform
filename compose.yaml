@@ -1,0 +1,29 @@
+# Phase 3: PostgreSQL only, so the API and its tests run against a real database.
+# Phase 5 adds api, web, seaweedfs, scan-worker and the app/data network split.
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: ecp-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-ecp}
+    ports:
+      # Bound to loopback only: nothing on the LAN can reach the database.
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      # Runs once, when the volume is first created. Creates the test database.
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+volumes:
+  postgres-data:

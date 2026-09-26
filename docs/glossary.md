@@ -49,6 +49,7 @@ Short, accurate definitions of every term used in this project, with the network
 - **Bucket**: the top-level container for objects in S3-style storage.
 - **Checksum**: a hash (SHA-256 here) of file bytes stored with the metadata, used to detect corruption and duplicates.
 - **Connection pool**: a set of reusable database connections. Postgres handles a few hundred connections well, not thousands, so pooling matters when replicas grow.
+- **Driver adapter (Prisma)**: Prisma 7 sends queries through an ordinary database driver (node-postgres here) instead of a bundled engine binary. Fewer moving parts in the container image, and the connection pool is the standard `pg` one.
 - **Lifecycle rule**: an S3 policy that expires or moves objects after N days, which controls cost.
 - **Migration**: a versioned, ordered change to the database schema, checked into git. Prisma generates and applies them.
 - **Multi-AZ (RDS)**: a synchronous standby in a second AZ with automatic failover.
@@ -67,6 +68,7 @@ Short, accurate definitions of every term used in this project, with the network
 
 ## Identity and security
 
+- **Append-only table**: a table that accepts INSERT but rejects UPDATE and DELETE, here enforced by a PostgreSQL trigger on `audit_events`. History can be added to but never rewritten, which is what makes an audit trail trustworthy.
 - **argon2id**: a memory-hard password hashing algorithm, the current recommendation over bcrypt. Slow on purpose so brute force is expensive.
 - **Access token**: a short-lived JWT (minutes) sent as a Bearer header. If stolen, it expires soon.
 - **Audit log**: an append-only record of who did what, to which target, when, from where, with what result.
@@ -90,7 +92,10 @@ Short, accurate definitions of every term used in this project, with the network
 - **Secrets manager**: a service that stores secrets encrypted and hands them to authorised identities at runtime, so they are never in code, images or state files.
 - **STRIDE**: a threat-modelling checklist: Spoofing, Tampering, Repudiation, Information disclosure, Denial of service, Elevation of privilege.
 - **Threat model**: a structured list of assets, who might attack them, how, and what stops them.
+- **Timing attack**: learning a secret from how long a response takes. A login that returns faster for unknown emails than for wrong passwords reveals which emails have accounts. The API verifies against a dummy hash so both paths cost the same.
+- **Token family**: every refresh token descended from one login shares a family ID. When a revoked token is presented again, the whole family is revoked, so a thief and the real user are both logged out and nobody keeps a working session.
 - **Trust boundary**: a line where the level of trust changes, for example browser to API, or API to database.
+- **Trust proxy (X-Forwarded-For)**: a reverse proxy replaces the client IP with its own and puts the original in the `X-Forwarded-For` header. `TRUST_PROXY` tells Express how many proxies to believe. Trust too many and a client can forge the header to dodge rate limits, like an ACL that trusts a spoofable source address.
 - **XSS (Cross-Site Scripting)**: injecting script into a page. Mitigated by React's escaping, a Content Security Policy, and keeping tokens out of JavaScript-readable storage.
 - **Zod**: a TypeScript validation library. One schema validates the request on the server and the form on the client.
 

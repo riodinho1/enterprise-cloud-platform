@@ -26,3 +26,6 @@ export type LoginInput = z.infer<typeof loginSchema>;
 
 export const ROLES = ['user', 'admin'] as const;
 export type Role = (typeof ROLES)[number];
+
+export const changeRoleSchema = z.object({ role: z.enum(ROLES) });
+export type ChangeRoleInput = z.infer<typeof changeRoleSchema>;

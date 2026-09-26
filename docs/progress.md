@@ -4,12 +4,13 @@ Resume file for new sessions. Read this, then [PROJECT_SPEC.md](PROJECT_SPEC.md)
 
 ## Current state
 
-- **Current phase**: 2 complete, waiting for "continue" to start Phase 3.
+- **Current phase**: 3 complete, waiting for "continue" to start Phase 4.
 - **Actual money spent**: $0.
-- **Anything running**: nothing persistent. `npm run dev:api` starts the API on port 3000 for development.
+- **Anything running**: one Docker container, `ecp-postgres` (PostgreSQL 17, port 127.0.0.1:5432, named volume `postgres-data`), started with `npm run db:up`. Nothing else. `npm run dev:api` starts the API on port 3000.
 - **Anything deployed**: nothing. Terraform is written from Phase 8 and only ever validated.
-- **Repository**: public at https://github.com/riodinho1/enterprise-cloud-platform, default branch `main`, pushed 2026-09-25. Commits are authored with the riodinho1 noreply address.
-- **Dependabot**: opened three PRs within a minute of the first push (actions/checkout 4→7, actions/setup-node 4→7, typescript 6.0.3→7.0.2). The two Actions bumps passed CI. The TypeScript major is untested and should not be merged without a session that reads its breaking changes.
+- **Repository**: public at https://github.com/riodinho1/enterprise-cloud-platform, default branch `main`. Phase 3 is committed locally and **not pushed** as of the end of the session; the owner pushes.
+- **Machine changes this session (2026-09-26)**: Docker Desktop installed by the owner (it must be started by hand; it does not auto-start). `C:\Users\HomePC\.wslconfig` created with `memory=4GB`, `processors=2`, `swap=1GB`; takes effect after `wsl --shutdown` and a Docker Desktop restart.
+- **Dependabot**: the two Actions bumps were merged in Phase 2. The TypeScript 6.0.3 to 7.0.2 PR (#3) was parked on 2026-09-26 with `@dependabot ignore this minor version` because typescript-eslint 8.70.1 pins `typescript <6.1` and TypeScript 7.0 has no programmatic API; Dependabot will open a new PR at 7.1 (decision D15).
 
 ## Phase status
 
@@ -17,7 +18,7 @@ Resume file for new sessions. Read this, then [PROJECT_SPEC.md](PROJECT_SPEC.md)
 |---|---|---|---|
 | 1 | Environment inspection, requirements, architecture docs + diagrams | done | 2026-09-25 |
 | 2 | Monorepo scaffold, lint/format/type-check, CI skeleton | done | 2026-09-25 |
-| 3 | DB schema, migrations, auth, RBAC | not started | |
+| 3 | DB schema, migrations, auth, RBAC | done | 2026-09-26 |
 | 4 | Document management + object storage + ownership enforcement | not started | |
 | 5 | Docker Compose environment with network segmentation | not started | |
 | 6 | Frontend: auth, dashboard, documents, upload, admin | not started | |
@@ -32,70 +33,99 @@ Resume file for new sessions. Read this, then [PROJECT_SPEC.md](PROJECT_SPEC.md)
 
 ## Component status (Section 0.4 labels)
 
+Machine for every measurement: the laptop in [environment.md](environment.md) (i5-6300U, 7.9 GB RAM, Windows 11, Docker Desktop on WSL 2 capped at 4 GB).
+
 | Component | Label now | Evidence |
 |---|---|---|
-| Monorepo tooling (lint, format, type-check, build) | TESTED | all pass on the dev machine, 2026-09-25 |
-| `packages/shared` Zod auth schemas | TESTED | 4 Vitest tests pass |
-| `apps/api` `/health` and env validation | TESTED | 3 Vitest + Supertest tests pass; built server answered `curl /health` with 200 |
-| `apps/web` placeholder shell | RUNS LOCALLY (dev server only) | `vite build` succeeds; no screens yet |
-| CI workflow | TESTED | first run on GitHub-hosted Ubuntu passed (run 36152649886, 2026-09-25, 25 s); Dependabot PR runs also green |
+| Monorepo tooling (lint, format, type-check, build) | TESTED | all pass, 2026-09-26 |
+| `packages/shared` Zod schemas | TESTED | 4 Vitest tests pass |
+| PostgreSQL 17 in Compose + Prisma 7 migrations (`users`, `refresh_tokens`, `audit_events`) | RUNS LOCALLY | `npm run db:up`, `npm run db:migrate`; two migrations applied to `ecp` and `ecp_test` |
+| `audit_events` append-only trigger | TESTED | Vitest test plus a direct `psql` UPDATE/DELETE both rejected |
+| Auth: register, login, refresh rotation + reuse detection, logout, `/auth/me` | RUNS LOCALLY + TESTED | 40 API tests pass in 23 s against real PostgreSQL (4 files: app, auth, admin, lib) |
+| RBAC: `requireAuth`, `requireRole`, admin list/role/deactivate | TESTED | covered by the same suite: B2, B3, B4, A3 each have named tests |
+| `/health`, `/ready` (database check with 2 s timeout) | TESTED | built server (`node dist/server.js`) answered 200 on both; 503 test with an unreachable database |
+| Seed script (local admin) | RUNS LOCALLY | `npm run db:seed` created `admin@example.com` with role admin |
+| CI workflow with PostgreSQL service container | NOT YET RUN | written this session; first run happens when Phase 3 is pushed. Phase 2 workflow was green |
+| `apps/web` placeholder shell | RUNS LOCALLY (dev server only) | unchanged since Phase 2 |
 | Everything else | NOT IMPLEMENTED | see phase table |
 
-## Toolchain versions pinned on 2026-09-25
+## Toolchain versions
 
-TypeScript 6.0, ESLint 10 (flat config via typescript-eslint 8), Prettier 3.9, Vitest 5, Vite 8, React 19.3, Tailwind 4.3, Express 5.2, Zod 4.6, Node 22 (`.nvmrc`). `npm audit` reported 0 vulnerabilities at install.
+Pinned 2026-09-25: TypeScript 6.0, ESLint 10 (typescript-eslint 8), Prettier 3.9, Vitest 5, Vite 8, React 19.3, Tailwind 4.3, Express 5.2, Zod 4.6, Node 22 (`.nvmrc`).
+
+Added 2026-09-26: Prisma 7.10.0 (`prisma`, `@prisma/client`, `@prisma/adapter-pg`; pinned because the npm `latest` tag pointed at 8.0.0-rc.17), `@node-rs/argon2` 2.2, `jose` 6.2, `pino` 10.3 + `pino-http` 11, `helmet` 8.3, `cors` 2.8, `express-rate-limit` 8.7, `cookie-parser` 1.4, PostgreSQL image `postgres:17-alpine`. `npm audit`: 0 vulnerabilities.
 
 ## Decisions approved by the owner
 
 All recorded with reasons in [architecture.md](architecture.md) Section 11.
 
-- 2026-09-25: SeaweedFS for object storage, Garage as fallback.
-- 2026-09-25: downloads streamed through the API after an ownership check.
-- 2026-09-25: Postgres job table as the queue, no Redis.
-- 2026-09-25: ClamAV as an opt-in Compose profile.
-- 2026-09-25: checkov in GitHub Actions only, never locally; Trivy + tflint locally.
+- 2026-09-25: SeaweedFS for object storage, Garage as fallback (D1).
+- 2026-09-25: downloads streamed through the API after an ownership check (D2).
+- 2026-09-25: Postgres job table as the queue, no Redis (D3).
+- 2026-09-25: ClamAV as an opt-in Compose profile (D4).
+- 2026-09-25: checkov in GitHub Actions only, never locally; Trivy + tflint locally (D5).
 - 2026-09-25: git identity set per-repo to `Raymond Okoche Adrian <166107642+riodinho1@users.noreply.github.com>`.
+- 2026-09-26: stay on TypeScript 6 until typescript-eslint supports 7 (D15). Owner approved parking the Dependabot PR.
+- 2026-09-26, made by Claude during Phase 3 and **awaiting owner review**: D9 (role enum instead of a `roles` table), D10 (family revocation on reuse), D11 (re-read user on every request), D12 (409 on duplicate email), D13 (audit trigger), D14 (Prisma 7.10.0 pin).
 
-## Phase 2 engineering notes
+## Phase 3 engineering notes
 
-- `packages/shared` is consumed as built output (`dist/`), so root `typecheck` and `test` build it first. Reason: the API runs as native ESM in Node, which cannot import `.ts` files from another package at runtime, and TypeScript project references would add complexity for one package.
-- The API is native ESM (`"type": "module"`, `module: NodeNext`), so relative imports carry a `.js` extension. Reason: several libraries planned for later phases (`file-type` for magic bytes, for example) are ESM-only.
-- Markdown is excluded from Prettier to avoid table-padding churn on every docs edit. Code is formatted.
-- The Vite dev server proxies `/api/*` to the API and strips the prefix. nginx does the same in Docker (Phase 5) and the ALB path rule does the same in AWS, so the browser always sees one origin.
-- CI skips runs for docs-only changes (`paths-ignore`). Trade-off: a docs-only PR shows no check, which is acceptable for this project.
+- **Prisma 7 layout**: the connection URL lives in `apps/api/prisma.config.ts`, not in `schema.prisma`. The client is generated as TypeScript into `apps/api/src/generated/` (git-ignored) with `.js` import extensions so plain `tsc` compiles it into `dist/`. Every root script that needs it runs `npm run db:generate` first (`prepare:ts`).
+- **One `.env` at the repository root**. `loadDotEnv()` in `config.ts` and the same logic in `prisma.config.ts` read it only when `DATABASE_URL` is not already set, so Docker and CI inject the environment and the file is ignored.
+- **Tests use a second database** (`ecp_test`, created by `docker/postgres/init/01-test-database.sql` on the first start of the volume). `vitest` global setup runs `prisma migrate deploy` against `TEST_DATABASE_URL`, refuses any database name that does not end in `_test`, and tests truncate the tables between cases. Test files run serially (`fileParallelism: false`) because they share that database.
+- **The refresh cookie path is `/api/auth`**, the browser-visible path through the Vite proxy and nginx, not the API's own `/auth`. Configurable with `REFRESH_COOKIE_PATH`.
+- **Order of checks on refresh**: unknown token, deactivated user (403, no reuse alarm, because deactivation itself revoked the tokens), reused token (revoke family, 401), expired (401), then rotate. The test suite caught the original ordering, which raised a false reuse alarm after an admin deactivation.
+- **`req.params` is `string | string[] | undefined` in Express 5 types**, so IDs are parsed as `unknown` through a Zod UUID schema and any failure is a 404.
+- **`@node-rs/argon2` exports a const enum** that `verbatimModuleSyntax` forbids importing; argon2id is the library default so the option is simply omitted and a test asserts the `$argon2id$` prefix.
+- **Rate limiter state is in-process memory.** Two API containers would each allow the full quota. Noted for Phase 5; the AWS design puts the WAF rate rule in front.
+- **Commit hygiene**: `.env`, `apps/api/src/generated/` and `dist/` are ignored and were verified absent from the commit.
 
-## Files that exist
+## Files added or changed in Phase 3
 
 | Path | Purpose |
 |---|---|
-| package.json | workspace root, scripts, dev tooling |
-| tsconfig.base.json | strict compiler options shared by every workspace |
-| eslint.config.js, .prettierrc, .prettierignore | lint and format rules |
-| .editorconfig, .gitattributes, .nvmrc | editor defaults, LF line endings, Node version |
-| .gitignore, .env.example | ignore list, documented environment contract |
-| LICENSE, SECURITY.md, CONTRIBUTING.md | MIT, reporting policy, commit conventions |
-| .github/workflows/ci.yml | install, lint, format check, type-check, test, build |
-| .github/dependabot.yml | weekly npm and Actions updates; docker and terraform blocks ready to enable |
-| packages/shared/src/auth.ts | register and login Zod schemas, password bounds, roles |
-| packages/shared/src/api.ts | `ApiError` and `HealthResponse` types |
-| apps/api/src/config.ts | Zod-validated environment loader |
-| apps/api/src/app.ts | `createApp()` factory so tests build the app without a port |
-| apps/api/src/routes/health.ts | `GET /health` liveness |
-| apps/api/src/server.ts | listener and SIGTERM handling |
-| apps/web/src/App.tsx | placeholder shell that calls `/api/health` through the proxy |
-| README.md | overview, status table, stack, setup |
-| PROJECT_PROMPT.md, CLAUDE.md, docs/* | brief, rules, Phase 1 docs |
+| compose.yaml | PostgreSQL 17 service, loopback-only port, healthcheck, 512 MB limit, init scripts |
+| docker/postgres/init/01-test-database.sql | creates `ecp_test` on first start |
+| .env.example | database, JWT, cookie, rate-limit and seed variables with generation commands |
+| apps/api/prisma.config.ts | Prisma 7 config: schema path, migrations path, seed command, datasource URL |
+| apps/api/prisma/schema.prisma | `User`, `RefreshToken`, `AuditEvent`, `Role` and `AuditResult` enums |
+| apps/api/prisma/migrations/20260926000518_init | tables, indexes, foreign keys |
+| apps/api/prisma/migrations/20260926000600_audit_append_only | trigger rejecting UPDATE/DELETE on `audit_events` |
+| apps/api/prisma/seed.ts | local admin upsert from `SEED_ADMIN_*`; refuses in production |
+| apps/api/src/config.ts | extended env schema; `loadDotEnv()` |
+| apps/api/src/db.ts | `createDb()` with the pg driver adapter; `isUniqueViolation()` |
+| apps/api/src/version.ts | `APP_VERSION` (moved out of app.ts to avoid a circular import) |
+| apps/api/src/lib/errors.ts | `HttpError` |
+| apps/api/src/lib/password.ts | argon2id hash/verify, dummy hash for constant-time unknown-user checks |
+| apps/api/src/lib/tokens.ts | `AccessTokens` (HS256 JWT sign/verify), refresh token generation and hashing |
+| apps/api/src/lib/audit.ts | `recordAudit()` with IP and user agent; action names |
+| apps/api/src/middleware/logging.ts | pino logger with redaction; pino-http with request IDs |
+| apps/api/src/middleware/validate.ts | `validateBody(schema)` |
+| apps/api/src/middleware/auth.ts | `requireAuth`, `requireRole`, `currentUser`, public user projection |
+| apps/api/src/middleware/error-handler.ts | 404 handler and the single error formatter |
+| apps/api/src/middleware/rate-limit.ts | auth rate limiter (429 in the shared error shape) |
+| apps/api/src/routes/health.ts | `/health` and `/ready` |
+| apps/api/src/routes/auth.ts | register, login, refresh, logout, me |
+| apps/api/src/routes/admin.ts | list users, change role, deactivate |
+| apps/api/src/app.ts, server.ts | middleware stack; startup with dotenv, logger, database, graceful shutdown |
+| apps/api/src/test/global-setup.ts, helpers.ts | migrate the test database; app/session helpers |
+| apps/api/src/*.test.ts (4 files) | 40 tests |
+| apps/api/tsconfig.typecheck.json | type-checks tests, seed and config files too |
+| .github/workflows/ci.yml | PostgreSQL service container, per-run JWT secret |
+| docs/auth.md | the Phase 3 explainer |
+| docs/architecture.md, docs/glossary.md, docs/environment.md, README.md | decisions D9–D15, five new terms, machine changes, status |
 
-## Next session: Phase 3 plan
+## Next session: Phase 4 plan
 
-1. Prisma with PostgreSQL: `users`, `roles`, `refresh_tokens`, `audit_events` (documents/folders/tags in Phase 4). Migration checked in.
-2. Postgres for tests: needs Docker (Phase 5 install) **or** a CI service container. Decide at session start; if Docker is not yet installed, Phase 3 can use `pg-mem` or be reordered after Phase 5. Recommendation: install Docker Desktop before Phase 3 so tests run against real Postgres locally.
-3. Register, login, refresh (rotation with reuse detection), logout. argon2id hashing. Access JWT 15 min, refresh cookie 7 days, httpOnly, Secure, SameSite=Strict.
-4. Middleware: request ID, pino, helmet, CORS (single origin), rate limiter on auth routes, Zod validation, consistent error handler.
-5. RBAC middleware (`requireRole('admin')`), deactivated-user rejection, `/ready` checking the DB.
-6. Tests for every endpoint and every boundary in requirements B2, B3, B4, plus deactivated users.
-7. Add the Postgres service container to CI.
+1. Prisma models and migration: `documents` (owner, storage key, original name, size, MIME, checksum, scan status, timestamps, soft delete), `folders`, `tags`, `document_tags`.
+2. Add SeaweedFS to `compose.yaml` (S3 API, SIMULATED for Amazon S3), a bucket init step, and `S3_*` variables in `.env.example`. Confirm the image and licence again at session start (checked 2026-09-25).
+3. Upload: streaming multipart with a size limit, magic-byte type allow-list (`file-type`), sanitised original name, random storage key, SHA-256 checksum, status `PENDING_SCAN`. Requirement B5 tests: oversized, disallowed, disguised.
+4. Download streamed through the API after the ownership check (D2); 404 for another user's document (D8). Requirement B1 tests including guessed IDs.
+5. Metadata, list with search and filters, folders, tags, soft delete. Audit `UPLOAD`, `DOWNLOAD`, `DELETE`.
+6. `/ready` gains a storage check; test both dependencies down.
+7. Keep the API and its tests running against the same Compose services; CI gets a SeaweedFS service container or a skip for storage tests (decide at session start).
 
 ## Open questions
 
-- Whether to install Docker Desktop before Phase 3 (recommended) so auth tests run against real Postgres. See Phase 3 plan item 2.
+- Owner review of decisions D9–D14 (made during Phase 3, listed above).
+- Whether CI should run storage tests against a SeaweedFS service container in Phase 4 or defer them to Phase 5.

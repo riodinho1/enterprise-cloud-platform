@@ -18,11 +18,17 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "npm run build:shared && npm run typecheck --workspaces --if-present",
-    "test": "npm run build:shared && npm run test --workspaces --if-present",
-    "build": "npm run build --workspaces --if-present",
-    "dev:api": "npm run build:shared && npm run dev -w apps/api",
-    "dev:web": "npm run build:shared && npm run dev -w apps/web"
+    "typecheck": "npm run prepare:ts && npm run typecheck --workspaces --if-present",
+    "test": "npm run prepare:ts && npm run test --workspaces --if-present",
+    "build": "npm run db:generate && npm run build --workspaces --if-present",
+    "dev:api": "npm run prepare:ts && npm run dev -w apps/api",
+    "dev:web": "npm run build:shared && npm run dev -w apps/web",
+    "db:up": "docker compose up -d --wait postgres",
+    "db:down": "docker compose down",
+    "db:generate": "npm run db:generate -w apps/api",
+    "db:migrate": "npm run db:migrate -w apps/api",
+    "db:seed": "npm run db:seed -w apps/api",
+    "prepare:ts": "npm run build:shared && npm run db:generate"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

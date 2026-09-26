@@ -42,12 +42,13 @@ All of these are free, need no account and no card. Install each one only when i
 | gitleaks | 9 | `choco install gitleaks` |
 | k6 | 13 | `winget install k6.k6` |
 
-Docker Desktop is free for personal use and education. After installing it, create `C:\Users\<you>\.wslconfig` with a 4 GB memory cap so the laptop stays responsive:
+Docker Desktop is free for personal use and education. It was installed on 2026-09-26 (`docker run hello-world` works; it must be started by hand, it does not auto-start). The same day this file was created as `C:\Users\<you>\.wslconfig` with a 4 GB memory cap so the laptop stays responsive:
 
 ```ini
 [wsl2]
 memory=4GB
 processors=2
+swap=1GB
 ```
 
 ## Checkov policy

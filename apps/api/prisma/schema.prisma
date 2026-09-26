@@ -1,0 +1,83 @@
+// Prisma 7: the connection URL lives in prisma.config.ts, not here.
+// The client is generated as TypeScript into src/generated (git-ignored) so tsc
+// compiles it into dist alongside the rest of the API.
+generator client {
+  provider               = "prisma-client"
+  output                 = "../src/generated/prisma"
+  runtime                = "nodejs"
+  moduleFormat           = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension    = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  user
+  admin
+}
+
+enum AuditResult {
+  SUCCESS
+  FAILURE
+}
+
+model User {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  displayName  String   @map("display_name")
+  role         Role     @default(user)
+  // Deactivated users keep their rows (and their audit trail) but are rejected on every request.
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  refreshTokens RefreshToken[]
+  auditEvents   AuditEvent[]
+
+  @@map("users")
+}
+
+// One row per issued refresh token. Only a SHA-256 hash is stored, so a database
+// leak does not hand out working sessions. Tokens issued by rotating the same
+// original login share a familyId; reuse of a revoked token revokes the family.
+model RefreshToken {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash    String    @unique @map("token_hash")
+  familyId     String    @map("family_id") @db.Uuid
+  expiresAt    DateTime  @map("expires_at") @db.Timestamptz(6)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  revokedAt    DateTime? @map("revoked_at") @db.Timestamptz(6)
+  replacedById String?   @map("replaced_by_id") @db.Uuid
+  userAgent    String?   @map("user_agent")
+  ip           String?
+
+  @@index([userId])
+  @@index([familyId])
+  @@map("refresh_tokens")
+}
+
+// Append-only: the migration adds a trigger that rejects UPDATE and DELETE.
+model AuditEvent {
+  id         String      @id @default(uuid(7)) @db.Uuid
+  actorId    String?     @map("actor_id") @db.Uuid
+  // Restrict, not Cascade: a user with history can be deactivated but never deleted.
+  actor      User?       @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  action     String
+  targetType String?     @map("target_type")
+  targetId   String?     @map("target_id")
+  result     AuditResult
+  ip         String?
+  userAgent  String?     @map("user_agent")
+  metadata   Json?
+  createdAt  DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+  @@map("audit_events")
+}

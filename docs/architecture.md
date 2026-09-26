@@ -365,3 +365,10 @@ Stateless API tasks scale horizontally behind the load balancer; no session stat
 | D6 | ECS Fargate over EC2 or EKS | EC2 ASG, EKS | no servers to patch, no Kubernetes control-plane cost or complexity | 2026-09-25 |
 | D7 | nginx reverse proxy in `web` so UI and API share one origin | separate origins with CORS | mirrors CDN + ALB path routing; CORS still configured for the Vite dev server | 2026-09-25 |
 | D8 | 404 (not 403) for documents the caller does not own | 403 | prevents confirming that an ID exists | 2026-09-25 |
+| D9 | `role` is a PostgreSQL enum column on `users`, not a `roles` table | roles + user_roles tables | two fixed roles; a join table adds ceremony with no benefit, and moving to one later is a single migration | 2026-09-26 |
+| D10 | Reuse of a rotated refresh token revokes the whole token family, even for benign races | revoke only the reused token | there is no way to tell a stale tab from a thief; strict is the safer default (requirement B4) | 2026-09-26 |
+| D11 | `requireAuth` re-reads the user row on every request | trust the role and status inside the JWT | deactivation and role changes must apply immediately (A3), at the cost of one indexed query | 2026-09-26 |
+| D12 | Duplicate registration returns 409 `EMAIL_TAKEN` | always 201 with an email to the real owner | needs no email service; enumeration is bounded by the auth rate limiter and documented in auth.md | 2026-09-26 |
+| D13 | `audit_events` append-only enforced by a database trigger in the migration | grants only | the trigger travels with the schema and works on any PostgreSQL; grants are added as a second layer in Phase 5 | 2026-09-26 |
+| D14 | Prisma pinned to 7.10.0 | npm `latest` tag | on 2026-09-26 the `prisma` package `latest` tag pointed at 8.0.0-rc.17; 7.10.0 is the current stable and matches `@prisma/client` | 2026-09-26 |
+| D15 | TypeScript stays on 6.0 until typescript-eslint supports 7 | merge Dependabot TypeScript 7.0.2 | TS 7.0 exposes no programmatic API, so typescript-eslint pins `<6.1`; revisit at 7.1 | 2026-09-26 |
