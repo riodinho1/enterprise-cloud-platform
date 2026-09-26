@@ -2,7 +2,7 @@
 
 A document management platform built to show how a serious company designs, secures, runs, monitors and maintains cloud infrastructure. Everything that runs, runs locally in Docker. The AWS architecture is written in Terraform, validated, and **not deployed**. Total spend so far: **$0**.
 
-> Phase 3 of 14. Authentication, role-based access control and the database schema run locally against PostgreSQL in Docker, with 44 passing tests. There are no document features or frontend screens yet. See [docs/progress.md](docs/progress.md).
+> Phase 3 of 14. Authentication, role-based access control and the database schema run locally against PostgreSQL in Docker, with 45 passing tests. There are no document features or frontend screens yet. See [docs/progress.md](docs/progress.md).
 
 ## Status
 
@@ -10,9 +10,9 @@ Labels are defined in [CLAUDE.md](CLAUDE.md) and used everywhere in this reposit
 
 | Area | Status |
 |---|---|
-| Monorepo, lint, type-check, unit tests, CI skeleton | TESTED (44 tests pass on the dev machine) |
+| Monorepo, lint, type-check, unit tests, CI skeleton | TESTED (45 tests pass on the dev machine) |
 | PostgreSQL in Docker Compose, Prisma migrations, append-only audit table | RUNS LOCALLY |
-| REST API: register, login, refresh rotation with reuse detection, logout, RBAC, admin user management, `/ready` | RUNS LOCALLY + TESTED (40 API tests against real PostgreSQL, dev machine) |
+| REST API: register, login, refresh rotation with reuse detection, logout, RBAC, admin user management, `/ready` | RUNS LOCALLY + TESTED (41 API tests against real PostgreSQL, dev machine) |
 | REST API: documents, folders, tags, search | NOT IMPLEMENTED (Phase 4) |
 | Frontend screens | NOT IMPLEMENTED (Phase 6) |
 | Docker Compose stack with network segmentation | NOT IMPLEMENTED (Phase 5; only PostgreSQL is in Compose today) |

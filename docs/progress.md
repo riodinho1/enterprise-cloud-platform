@@ -8,7 +8,7 @@ Resume file for new sessions. Read this, then [PROJECT_SPEC.md](PROJECT_SPEC.md)
 - **Actual money spent**: $0.
 - **Anything running**: one Docker container, `ecp-postgres` (PostgreSQL 17, port 127.0.0.1:5432, named volume `postgres-data`), started with `npm run db:up`. Nothing else. `npm run dev:api` starts the API on port 3000.
 - **Anything deployed**: nothing. Terraform is written from Phase 8 and only ever validated.
-- **Repository**: public at https://github.com/riodinho1/enterprise-cloud-platform, default branch `main`. Phase 3 is committed locally and **not pushed** as of the end of the session; the owner pushes.
+- **Repository**: public at https://github.com/riodinho1/enterprise-cloud-platform, default branch `main`. Phase 3 pushed 2026-09-26.
 - **Machine changes this session (2026-09-26)**: Docker Desktop installed by the owner (it must be started by hand; it does not auto-start). `C:\Users\HomePC\.wslconfig` created with `memory=4GB`, `processors=2`, `swap=1GB`; takes effect after `wsl --shutdown` and a Docker Desktop restart.
 - **Dependabot**: the two Actions bumps were merged in Phase 2. The TypeScript 6.0.3 to 7.0.2 PR (#3) was parked on 2026-09-26 with `@dependabot ignore this minor version` because typescript-eslint 8.70.1 pins `typescript <6.1` and TypeScript 7.0 has no programmatic API; Dependabot will open a new PR at 7.1 (decision D15).
 
@@ -41,7 +41,7 @@ Machine for every measurement: the laptop in [environment.md](environment.md) (i
 | `packages/shared` Zod schemas | TESTED | 4 Vitest tests pass |
 | PostgreSQL 17 in Compose + Prisma 7 migrations (`users`, `refresh_tokens`, `audit_events`) | RUNS LOCALLY | `npm run db:up`, `npm run db:migrate`; two migrations applied to `ecp` and `ecp_test` |
 | `audit_events` append-only trigger | TESTED | Vitest test plus a direct `psql` UPDATE/DELETE both rejected |
-| Auth: register, login, refresh rotation + reuse detection, logout, `/auth/me` | RUNS LOCALLY + TESTED | 40 API tests pass in 23 s against real PostgreSQL (4 files: app, auth, admin, lib) |
+| Auth: register, login, refresh rotation + reuse detection, logout, `/auth/me` | RUNS LOCALLY + TESTED | 41 API tests pass in 25 s against real PostgreSQL (4 files: app, auth, admin, lib) |
 | RBAC: `requireAuth`, `requireRole`, admin list/role/deactivate | TESTED | covered by the same suite: B2, B3, B4, A3 each have named tests |
 | `/health`, `/ready` (database check with 2 s timeout) | TESTED | built server (`node dist/server.js`) answered 200 on both; 503 test with an unreachable database |
 | Seed script (local admin) | RUNS LOCALLY | `npm run db:seed` created `admin@example.com` with role admin |
@@ -66,7 +66,7 @@ All recorded with reasons in [architecture.md](architecture.md) Section 11.
 - 2026-09-25: checkov in GitHub Actions only, never locally; Trivy + tflint locally (D5).
 - 2026-09-25: git identity set per-repo to `Raymond Okoche Adrian <166107642+riodinho1@users.noreply.github.com>`.
 - 2026-09-26: stay on TypeScript 6 until typescript-eslint supports 7 (D15). Owner approved parking the Dependabot PR.
-- 2026-09-26, made by Claude during Phase 3 and **awaiting owner review**: D9 (role enum instead of a `roles` table), D10 (family revocation on reuse), D11 (re-read user on every request), D12 (409 on duplicate email), D13 (audit trigger), D14 (Prisma 7.10.0 pin).
+- 2026-09-26: D9 (role enum instead of a `roles` table), D10 (family revocation on reuse), D11 (re-read user on every request), D12 (409 on duplicate email), D13 (audit trigger), D14 (Prisma 7.10.0 pin). Made during Phase 3, approved by the owner the same day.
 
 ## Phase 3 engineering notes
 
@@ -109,7 +109,7 @@ All recorded with reasons in [architecture.md](architecture.md) Section 11.
 | apps/api/src/routes/admin.ts | list users, change role, deactivate |
 | apps/api/src/app.ts, server.ts | middleware stack; startup with dotenv, logger, database, graceful shutdown |
 | apps/api/src/test/global-setup.ts, helpers.ts | migrate the test database; app/session helpers |
-| apps/api/src/*.test.ts (4 files) | 40 tests |
+| apps/api/src/*.test.ts (4 files) | 41 tests |
 | apps/api/tsconfig.typecheck.json | type-checks tests, seed and config files too |
 | .github/workflows/ci.yml | PostgreSQL service container, per-run JWT secret |
 | docs/auth.md | the Phase 3 explainer |
@@ -127,5 +127,4 @@ All recorded with reasons in [architecture.md](architecture.md) Section 11.
 
 ## Open questions
 
-- Owner review of decisions D9–D14 (made during Phase 3, listed above).
 - Whether CI should run storage tests against a SeaweedFS service container in Phase 4 or defer them to Phase 5.

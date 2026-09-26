@@ -117,8 +117,10 @@ describe('POST /admin/users/:id/deactivate (requirement A3)', () => {
 
     const me = await request(app).get('/auth/me').set('Authorization', asUser());
     expect(me.status).toBe(403);
+    expect(me.body.error.code).toBe('ACCOUNT_DEACTIVATED');
     const refresh = await request(app).post('/auth/refresh').set('Cookie', user.cookie);
     expect(refresh.status).toBe(403);
+    expect(refresh.body.error.code).toBe('ACCOUNT_DEACTIVATED');
 
     const live = await testDb().refreshToken.count({
       where: { userId: user.userId, revokedAt: null },
@@ -127,6 +129,25 @@ describe('POST /admin/users/:id/deactivate (requirement A3)', () => {
     const audit = await testDb().auditEvent.findFirst({ where: { action: 'USER_DEACTIVATED' } });
     expect(audit?.actorId).toBe(admin.userId);
     expect(audit?.targetId).toBe(user.userId);
+  });
+
+  it('does not log a refresh after deactivation as token reuse', async () => {
+    await request(app)
+      .post(`/admin/users/${user.userId}/deactivate`)
+      .set('Authorization', asAdmin());
+    // Deactivation revoked the token. The user's browser will still try to refresh;
+    // that is expected behaviour, not evidence of a stolen token.
+    const refresh = await request(app).post('/auth/refresh').set('Cookie', user.cookie);
+    expect(refresh.status).toBe(403);
+    expect(refresh.body.error.code).toBe('ACCOUNT_DEACTIVATED');
+
+    const reuse = await testDb().auditEvent.count({ where: { action: 'REFRESH_REUSE_DETECTED' } });
+    expect(reuse).toBe(0);
+    const failures = await testDb().auditEvent.findMany({
+      where: { action: 'REFRESH_FAILURE', actorId: user.userId },
+    });
+    expect(failures).toHaveLength(1);
+    expect(failures[0]?.metadata).toEqual({ reason: 'deactivated' });
   });
 
   it('refuses to deactivate yourself', async () => {
