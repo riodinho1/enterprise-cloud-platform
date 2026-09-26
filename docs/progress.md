@@ -49,7 +49,7 @@ Machine for every measurement: the laptop in [environment.md](environment.md) (i
 | Folders, tags, search, paging, soft delete | RUNS LOCALLY + TESTED | folders.test.ts and documents.test.ts |
 | `/ready` (database and storage, 2 s timeout each) | TESTED | 200 with both up; 503 naming the failed dependency for each one down |
 | API test suite | TESTED | 69 tests in 7 files pass against real PostgreSQL and SeaweedFS in about 40 s (API workspace alone) |
-| CI with both services from `compose.yaml` | see below | rewritten this session; result recorded once the push has run |
+| CI with both services from `compose.yaml` | TESTED | first run on GitHub-hosted Ubuntu passed every step (run 36265286881, 2026-09-26, 82 s): compose up, lint, format, type-check, 73 tests, build |
 | `apps/web` placeholder shell | RUNS LOCALLY (dev server only) | unchanged since Phase 2 |
 | Malware scanning | NOT IMPLEMENTED | `MALWARE_SCAN=off` marks uploads CLEAN (D16); Phase 7 |
 | Everything else | NOT IMPLEMENTED | see phase table |
