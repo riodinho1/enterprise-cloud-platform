@@ -23,7 +23,7 @@
     "build": "npm run db:generate && npm run build --workspaces --if-present",
     "dev:api": "npm run prepare:ts && npm run dev -w apps/api",
     "dev:web": "npm run build:shared && npm run dev -w apps/web",
-    "db:up": "docker compose up -d --wait postgres",
+    "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
     "db:generate": "npm run db:generate -w apps/api",
     "db:migrate": "npm run db:migrate -w apps/api",

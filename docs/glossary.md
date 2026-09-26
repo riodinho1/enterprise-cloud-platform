@@ -53,9 +53,11 @@ Short, accurate definitions of every term used in this project, with the network
 - **Lifecycle rule**: an S3 policy that expires or moves objects after N days, which controls cost.
 - **Migration**: a versioned, ordered change to the database schema, checked into git. Prisma generates and applies them.
 - **Multi-AZ (RDS)**: a synchronous standby in a second AZ with automatic failover.
+- **Multipart upload (S3)**: an object is sent in parts (5 MB or more each) that the store assembles at the end. The SDK drives it from a stream, so a large file is never held in memory, and a failed upload leaves no half-written object.
 - **Object key**: the "path" of an object in a bucket. This project uses random UUIDs so keys cannot be guessed.
 - **Object storage**: flat storage of blobs by key with HTTP access. Cheap, durable, scales without action. Not a filesystem.
 - **ORM (Object-Relational Mapper)**: a library (Prisma here) that maps tables to typed objects and generates SQL.
+- **Path-style addressing**: `http://host/bucket/key` instead of `http://bucket.host/key`. Self-hosted S3 servers and local Docker need it because there is no wildcard DNS for bucket subdomains.
 - **Pre-signed URL**: a time-limited URL that grants direct access to one object. Powerful and a bearer credential; this project streams instead and documents the trade-off.
 - **Read replica**: a read-only copy of the database fed by replication, used to offload read traffic.
 - **RPO / RTO**: Recovery Point Objective is how much data you can afford to lose (time since the last backup). Recovery Time Objective is how long you can afford to be down.
@@ -73,6 +75,7 @@ Short, accurate definitions of every term used in this project, with the network
 - **Access token**: a short-lived JWT (minutes) sent as a Bearer header. If stolen, it expires soon.
 - **Audit log**: an append-only record of who did what, to which target, when, from where, with what result.
 - **Bearer token**: any token that grants access to whoever holds it. Treat like a password.
+- **Content sniffing**: a browser guessing a file type from its bytes and ignoring the declared type. `X-Content-Type-Options: nosniff` (set by Helmet) forbids it, so an uploaded text file can never be executed as script.
 - **CORS (Cross-Origin Resource Sharing)**: browser rules controlling which web origins may call an API. The API allows only the frontend's origin.
 - **CSRF (Cross-Site Request Forgery)**: tricking a logged-in browser into sending a request. Mitigated by SameSite cookies and by requiring the Bearer header, which a cross-site form cannot set.
 - **Defence in depth**: several independent layers so one failure does not mean a breach. Segmentation plus RBAC plus validation plus audit.

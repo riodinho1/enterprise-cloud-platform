@@ -21,6 +21,27 @@ const envSchema = z.object({
   REFRESH_TOKEN_TTL_SECONDS: z.coerce.number().int().min(300).default(604800),
   REFRESH_COOKIE_PATH: z.string().startsWith('/').default('/api/auth'),
   AUTH_RATE_LIMIT_MAX: z.coerce.number().int().min(1).default(10),
+
+  // Object storage through the S3 API. Locally SeaweedFS; in AWS the endpoint is
+  // left unset and the task role supplies credentials instead of static keys.
+  S3_ENDPOINT: z.string().url(),
+  S3_REGION: z.string().min(1).default('us-east-1'),
+  S3_BUCKET: z.string().regex(/^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/, 'must be a valid bucket name'),
+  S3_ACCESS_KEY_ID: z.string().min(1),
+  S3_SECRET_ACCESS_KEY: z.string().min(1),
+  S3_FORCE_PATH_STYLE: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((v) => v === 'true'),
+
+  UPLOAD_MAX_BYTES: z.coerce
+    .number()
+    .int()
+    .min(1024)
+    .default(25 * 1024 * 1024),
+  // "off" marks uploads CLEAN at once. "clamav" leaves them PENDING_SCAN for the
+  // Phase 7 worker. ClamAV is opt-in on this machine (decision D4).
+  MALWARE_SCAN: z.enum(['off', 'clamav']).default('off'),
 });
 
 export type Config = z.infer<typeof envSchema>;

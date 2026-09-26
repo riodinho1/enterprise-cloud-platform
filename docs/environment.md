@@ -69,7 +69,7 @@ The brief asks for an open-source S3-compatible server and to check licensing an
 | Garage (`dxflrs/garage`) | AGPL 3.0 | Image pushed on 2026-09-24 | Fallback |
 | RustFS (`rustfs/rustfs`) | Apache 2.0 | 1.0.0 released 2026-09-16 | Too new |
 
-SeaweedFS was chosen because it is a single binary with a built-in S3 gateway, works with the AWS SDK for JavaScript v3, supports pre-signed URLs, is light on RAM, and has a permissive licence. The choice is confirmed for real in Phase 5 when Docker is available. Its status label is SIMULATED: it stands in for Amazon S3.
+SeaweedFS was chosen because it is a single binary with a built-in S3 gateway, works with the AWS SDK for JavaScript v3, supports pre-signed URLs, is light on RAM, and has a permissive licence. Confirmed for real on 2026-09-26 in Phase 4: `chrislusf/seaweedfs:4.47` in `mini` mode, SDK round trip and credential rejection verified, healthcheck on `GET /healthz`. Its status label is SIMULATED: it stands in for Amazon S3.
 
 ## ClamAV feasibility note
 

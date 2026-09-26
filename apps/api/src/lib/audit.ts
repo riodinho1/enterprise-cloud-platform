@@ -10,7 +10,10 @@ export type AuditAction =
   | 'REFRESH_FAILURE'
   | 'REFRESH_REUSE_DETECTED'
   | 'ROLE_CHANGED'
-  | 'USER_DEACTIVATED';
+  | 'USER_DEACTIVATED'
+  | 'UPLOAD'
+  | 'DOWNLOAD'
+  | 'DELETE';
 
 export interface AuditInput {
   actorId?: string | null | undefined;

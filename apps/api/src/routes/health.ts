@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import type { HealthResponse, ReadyResponse } from '@ecp/shared';
 import type { Db } from '../db.js';
+import type { Storage } from '../lib/storage.js';
 import { APP_VERSION } from '../version.js';
 
 const READY_TIMEOUT_MS = 2000;
 
-// A hung database must not hang the readiness probe: the orchestrator needs an
+// A hung dependency must not hang the readiness probe: the orchestrator needs an
 // answer within its own timeout to decide whether to route traffic here.
 async function databaseIsReachable(db: Db): Promise<boolean> {
   let timer: NodeJS.Timeout | undefined;
@@ -23,7 +24,7 @@ async function databaseIsReachable(db: Db): Promise<boolean> {
   }
 }
 
-export function healthRouter(db: Db): Router {
+export function healthRouter(db: Db, storage: Storage): Router {
   const router = Router();
 
   // Liveness: the process is up. Never touches dependencies.
@@ -36,14 +37,19 @@ export function healthRouter(db: Db): Router {
     res.json(body);
   });
 
-  // Readiness: the process can serve requests. Object storage joins the checks in Phase 4.
+  // Readiness: the process can serve requests. Both dependencies are checked in
+  // parallel and reported separately so an operator can see which one is down.
   router.get('/ready', async (_req, res) => {
-    const database = await databaseIsReachable(db);
+    const [database, objectStorage] = await Promise.all([
+      databaseIsReachable(db),
+      storage.ping(READY_TIMEOUT_MS),
+    ]);
+    const ok = database && objectStorage;
     const body: ReadyResponse = {
-      status: database ? 'ok' : 'degraded',
-      checks: { database: database ? 'ok' : 'failed' },
+      status: ok ? 'ok' : 'degraded',
+      checks: { database: database ? 'ok' : 'failed', storage: objectStorage ? 'ok' : 'failed' },
     };
-    res.status(database ? 200 : 503).json(body);
+    res.status(ok ? 200 : 503).json(body);
   });
 
   return router;

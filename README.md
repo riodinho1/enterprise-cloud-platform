@@ -2,7 +2,7 @@
 
 A document management platform built to show how a serious company designs, secures, runs, monitors and maintains cloud infrastructure. Everything that runs, runs locally in Docker. The AWS architecture is written in Terraform, validated, and **not deployed**. Total spend so far: **$0**.
 
-> Phase 3 of 14. Authentication, role-based access control and the database schema run locally against PostgreSQL in Docker, with 45 passing tests. There are no document features or frontend screens yet. See [docs/progress.md](docs/progress.md).
+> Phase 4 of 14. Authentication, RBAC, document upload and download with ownership enforcement, folders, tags and search run locally against PostgreSQL and SeaweedFS in Docker, with 73 passing tests. There are no frontend screens yet. See [docs/progress.md](docs/progress.md).
 
 ## Status
 
@@ -10,13 +10,13 @@ Labels are defined in [CLAUDE.md](CLAUDE.md) and used everywhere in this reposit
 
 | Area | Status |
 |---|---|
-| Monorepo, lint, type-check, unit tests, CI skeleton | TESTED (45 tests pass on the dev machine) |
+| Monorepo, lint, type-check, unit tests, CI skeleton | TESTED (73 tests pass on the dev machine) |
 | PostgreSQL in Docker Compose, Prisma migrations, append-only audit table | RUNS LOCALLY |
-| REST API: register, login, refresh rotation with reuse detection, logout, RBAC, admin user management, `/ready` | RUNS LOCALLY + TESTED (41 API tests against real PostgreSQL, dev machine) |
-| REST API: documents, folders, tags, search | NOT IMPLEMENTED (Phase 4) |
+| REST API: register, login, refresh rotation with reuse detection, logout, RBAC, admin user management, `/ready` | RUNS LOCALLY + TESTED (69 API tests against real PostgreSQL and SeaweedFS, dev machine) |
+| REST API: streamed upload with magic-byte checks, ownership-checked download, folders, tags, search, soft delete | RUNS LOCALLY + TESTED (B1 and B5 boundary tests pass) |
 | Frontend screens | NOT IMPLEMENTED (Phase 6) |
-| Docker Compose stack with network segmentation | NOT IMPLEMENTED (Phase 5; only PostgreSQL is in Compose today) |
-| Object storage (SeaweedFS, S3 API) | NOT IMPLEMENTED (Phase 4–5), will be SIMULATED |
+| Docker Compose stack with network segmentation | NOT IMPLEMENTED (Phase 5; PostgreSQL and SeaweedFS are in Compose today) |
+| Object storage (SeaweedFS 4.47 behind the S3 API) | SIMULATED, RUNS LOCALLY |
 | Malware scanning (ClamAV) | NOT IMPLEMENTED (Phase 7) |
 | Terraform for AWS (VPC, ALB, Fargate, RDS, S3, IAM, CloudWatch) | NOT IMPLEMENTED (Phase 8), will be DESIGNED / NOT DEPLOYED |
 | Monitoring (Prometheus, Grafana) | NOT IMPLEMENTED (Phase 11) |
@@ -52,26 +52,26 @@ Requires Node 22 or newer and Docker Desktop (free for personal use, no account 
 
 ```powershell
 npm ci
-Copy-Item .env.example .env   # then set POSTGRES_PASSWORD, DATABASE_URL, TEST_DATABASE_URL, JWT_ACCESS_SECRET, SEED_ADMIN_PASSWORD
-npm run db:up                 # PostgreSQL in Docker, bound to 127.0.0.1:5432 only
+Copy-Item .env.example .env   # then set POSTGRES_PASSWORD, DATABASE_URL, TEST_DATABASE_URL, JWT_ACCESS_SECRET, SEED_ADMIN_PASSWORD, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY
+npm run db:up                 # PostgreSQL and SeaweedFS in Docker, bound to 127.0.0.1 only
 npm run db:migrate            # apply the Prisma migrations
-npm run db:seed               # one local admin from SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD
+npm run db:seed               # one local admin from SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY
 npm run typecheck
-npm test                      # API tests run against the separate ecp_test database
+npm test                      # API tests use the separate ecp_test database and ecp-documents-test bucket
 npm run dev:api               # http://localhost:3000/health and /ready
 npm run dev:web               # in a second terminal: http://localhost:5173 (proxies /api to the API)
 ```
 
-`npm run db:down` stops PostgreSQL; the data volume survives until you remove it. Every variable in `.env.example` is documented there and validated at startup.
+`npm run db:down` stops both services; the data volumes survive until you remove them. Every variable in `.env.example` is documented there and validated at startup.
 
 ## Repository layout
 
 ```
-apps/api           Express API (TypeScript, ESM): auth, RBAC, admin, health; Prisma schema and migrations
+apps/api           Express API (TypeScript, ESM): auth, RBAC, admin, documents, folders, tags, health; Prisma schema and migrations
 apps/web           React + Vite + Tailwind frontend
 packages/shared    Zod schemas and types used by both
 docker/            init scripts for the local containers
-compose.yaml       local services (PostgreSQL today; the full stack in Phase 5)
+compose.yaml       local services (PostgreSQL and SeaweedFS today; the full stack in Phase 5)
 docs/              architecture, requirements, auth, glossary, progress, phase docs
 .github/           CI workflow (with a PostgreSQL service container) and Dependabot
 ```
@@ -81,6 +81,7 @@ docs/              architecture, requirements, auth, glossary, progress, phase d
 - [docs/architecture.md](docs/architecture.md): diagrams, components, flows, boundaries, failures, decisions
 - [docs/requirements.md](docs/requirements.md): functional and non-functional requirements with IDs
 - [docs/auth.md](docs/auth.md): password hashing, tokens, refresh rotation, RBAC, audit trail, rate limiting, endpoints
+- [docs/documents.md](docs/documents.md): object storage, upload validation, ownership enforcement, streamed downloads, folders and tags
 - [docs/glossary.md](docs/glossary.md): every term used, with networking mappings
 - [docs/environment.md](docs/environment.md): development machine, tool versions, install commands
 - [docs/design-direction.md](docs/design-direction.md): the visual rules every screen is checked against

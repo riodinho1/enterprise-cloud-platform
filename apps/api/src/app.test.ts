@@ -3,7 +3,8 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { createApp } from './app.js';
 import { loadConfig } from './config.js';
 import { createDb } from './db.js';
-import { createTestApp, testConfig } from './test/helpers.js';
+import { createStorage } from './lib/storage.js';
+import { createTestApp, testConfig, testDb, testStorage } from './test/helpers.js';
 
 describe('GET /health', () => {
   it('reports ok with uptime, a request ID and hardened headers', async () => {
@@ -18,21 +19,29 @@ describe('GET /health', () => {
 });
 
 describe('GET /ready', () => {
-  // Nothing listens on port 1, so the connection is refused immediately.
-  const unreachable = createDb('postgresql://nobody:nothing@127.0.0.1:1/nowhere');
-  afterAll(() => unreachable.$disconnect());
+  // Nothing listens on port 1, so both connections are refused immediately.
+  const unreachableDb = createDb('postgresql://nobody:nothing@127.0.0.1:1/nowhere');
+  const unreachableStorage = createStorage({ ...testConfig(), S3_ENDPOINT: 'http://127.0.0.1:1' });
+  afterAll(() => unreachableDb.$disconnect());
 
-  it('is 200 when the database answers', async () => {
+  it('is 200 when the database and storage answer', async () => {
     const res = await request(createTestApp()).get('/ready');
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ status: 'ok', checks: { database: 'ok' } });
+    expect(res.body).toEqual({ status: 'ok', checks: { database: 'ok', storage: 'ok' } });
   });
 
-  it('is 503 when the database is unreachable', async () => {
-    const app = createApp(testConfig(), { db: unreachable });
+  it('is 503 and names the database when it is unreachable', async () => {
+    const app = createApp(testConfig(), { db: unreachableDb, storage: testStorage() });
     const res = await request(app).get('/ready');
     expect(res.status).toBe(503);
-    expect(res.body).toEqual({ status: 'degraded', checks: { database: 'failed' } });
+    expect(res.body).toEqual({ status: 'degraded', checks: { database: 'failed', storage: 'ok' } });
+  });
+
+  it('is 503 and names storage when it is unreachable', async () => {
+    const app = createApp(testConfig(), { db: testDb(), storage: unreachableStorage });
+    const res = await request(app).get('/ready');
+    expect(res.status).toBe(503);
+    expect(res.body).toEqual({ status: 'degraded', checks: { database: 'ok', storage: 'failed' } });
   });
 });
 
@@ -58,6 +67,10 @@ describe('loadConfig', () => {
   const required = {
     DATABASE_URL: 'postgresql://u:p@localhost:5432/db',
     JWT_ACCESS_SECRET: 'x'.repeat(32),
+    S3_ENDPOINT: 'http://127.0.0.1:8333',
+    S3_BUCKET: 'bucket',
+    S3_ACCESS_KEY_ID: 'k',
+    S3_SECRET_ACCESS_KEY: 's',
   };
 
   it('applies defaults', () => {
@@ -66,18 +79,22 @@ describe('loadConfig', () => {
     expect(c.NODE_ENV).toBe('development');
     expect(c.ACCESS_TOKEN_TTL_SECONDS).toBe(900);
     expect(c.REFRESH_COOKIE_PATH).toBe('/api/auth');
+    expect(c.UPLOAD_MAX_BYTES).toBe(25 * 1024 * 1024);
+    expect(c.MALWARE_SCAN).toBe('off');
+    expect(c.S3_FORCE_PATH_STYLE).toBe(true);
   });
 
   it('rejects an invalid port with a readable message', () => {
     expect(() => loadConfig({ ...required, PORT: 'abc' })).toThrow(/PORT/);
   });
 
-  it('requires a database URL and a long JWT secret', () => {
-    expect(() => loadConfig({ JWT_ACCESS_SECRET: required.JWT_ACCESS_SECRET })).toThrow(
-      /DATABASE_URL/,
-    );
+  it('requires a database URL, a long JWT secret and storage settings', () => {
+    const { DATABASE_URL: _d, ...noDb } = required;
+    expect(() => loadConfig(noDb)).toThrow(/DATABASE_URL/);
     expect(() => loadConfig({ ...required, JWT_ACCESS_SECRET: 'short' })).toThrow(
       /JWT_ACCESS_SECRET/,
     );
+    const { S3_BUCKET: _b, ...noBucket } = required;
+    expect(() => loadConfig(noBucket)).toThrow(/S3_BUCKET/);
   });
 });

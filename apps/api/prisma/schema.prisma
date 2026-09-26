@@ -37,6 +37,9 @@ model User {
 
   refreshTokens RefreshToken[]
   auditEvents   AuditEvent[]
+  documents     Document[]
+  folders       Folder[]
+  tags          Tag[]
 
   @@map("users")
 }
@@ -80,4 +83,74 @@ model AuditEvent {
   @@index([actorId, createdAt])
   @@index([action, createdAt])
   @@map("audit_events")
+}
+
+enum ScanStatus {
+  PENDING_SCAN
+  CLEAN
+  QUARANTINED
+  FAILED
+}
+
+// Flat folders, one level, unique name per owner. Deleting a folder un-files its
+// documents (SetNull) rather than deleting them.
+model Folder {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  ownerId   String   @map("owner_id") @db.Uuid
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  name      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  documents Document[]
+
+  @@unique([ownerId, name])
+  @@map("folders")
+}
+
+model Tag {
+  id      String @id @default(uuid(7)) @db.Uuid
+  ownerId String @map("owner_id") @db.Uuid
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  name    String
+
+  documents DocumentTag[]
+
+  @@unique([ownerId, name])
+  @@map("tags")
+}
+
+// Metadata only. Bytes live in object storage under storageKey, a random UUID that
+// is never derived from the owner or the filename. Every query includes ownerId.
+model Document {
+  id             String     @id @default(uuid(7)) @db.Uuid
+  ownerId        String     @map("owner_id") @db.Uuid
+  owner          User       @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  folderId       String?    @map("folder_id") @db.Uuid
+  folder         Folder?    @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  storageKey     String     @unique @map("storage_key")
+  originalName   String     @map("original_name")
+  sizeBytes      Int        @map("size_bytes")
+  mimeType       String     @map("mime_type")
+  checksumSha256 String     @map("checksum_sha256")
+  scanStatus     ScanStatus @default(PENDING_SCAN) @map("scan_status")
+  createdAt      DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime?  @map("deleted_at") @db.Timestamptz(6)
+
+  tags DocumentTag[]
+
+  @@index([ownerId, deletedAt, createdAt])
+  @@index([ownerId, folderId])
+  @@map("documents")
+}
+
+model DocumentTag {
+  documentId String   @map("document_id") @db.Uuid
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  tagId      String   @map("tag_id") @db.Uuid
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([documentId, tagId])
+  @@map("document_tags")
 }

@@ -1,5 +1,6 @@
 # Phase 2 skeleton: install, lint, type-check, test, build.
-# Phase 3: PostgreSQL service container so API tests run against a real database.
+# Phase 3: PostgreSQL for API tests. Phase 4: SeaweedFS for storage tests.
+# Both come from the same compose.yaml used locally, so CI and the laptop cannot drift.
 # Phase 10 adds security scans (npm audit, CodeQL, gitleaks, Trivy, Terraform fmt/validate/checkov) and Docker builds.
 name: CI
 
@@ -28,29 +29,25 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
-    services:
-      postgres:
-        image: postgres:17-alpine
-        env:
-          POSTGRES_USER: ecp
-          # Throwaway credential for a container that lives for one run and is reachable
-          # only from this job. It is not a secret, so it does not need to be one.
-          POSTGRES_PASSWORD: ci-${{ github.run_id }}
-          POSTGRES_DB: ecp_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U ecp -d ecp_test"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 10
-
     env:
+      # Throwaway credentials for containers that live for one run and are reachable
+      # only from this job. They are not secrets, so they do not need to be.
+      POSTGRES_USER: ecp
+      POSTGRES_PASSWORD: ci-${{ github.run_id }}
+      POSTGRES_DB: ecp
+      S3_ACCESS_KEY_ID: ci-access-${{ github.run_id }}
+      S3_SECRET_ACCESS_KEY: ci-secret-${{ github.run_id }}
       DATABASE_URL: postgresql://ecp:ci-${{ github.run_id }}@127.0.0.1:5432/ecp_test
       TEST_DATABASE_URL: postgresql://ecp:ci-${{ github.run_id }}@127.0.0.1:5432/ecp_test
+      S3_ENDPOINT: http://127.0.0.1:8333
+      S3_BUCKET: ecp-documents
+      TEST_S3_BUCKET: ecp-documents-test
 
     steps:
       - uses: actions/checkout@v7
+
+      - name: Start PostgreSQL and SeaweedFS from compose.yaml
+        run: docker compose up -d --wait
 
       - uses: actions/setup-node@v7
         with:
@@ -72,3 +69,7 @@ jobs:
       - run: npm test
 
       - run: npm run build
+
+      - name: Service logs on failure
+        if: failure()
+        run: docker compose logs --tail=100
