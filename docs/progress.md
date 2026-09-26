@@ -45,7 +45,7 @@ Machine for every measurement: the laptop in [environment.md](environment.md) (i
 | RBAC: `requireAuth`, `requireRole`, admin list/role/deactivate | TESTED | covered by the same suite: B2, B3, B4, A3 each have named tests |
 | `/health`, `/ready` (database check with 2 s timeout) | TESTED | built server (`node dist/server.js`) answered 200 on both; 503 test with an unreachable database |
 | Seed script (local admin) | RUNS LOCALLY | `npm run db:seed` created `admin@example.com` with role admin |
-| CI workflow with PostgreSQL service container | NOT YET RUN | written this session; first run happens when Phase 3 is pushed. Phase 2 workflow was green |
+| CI workflow with PostgreSQL service container | TESTED | first run on GitHub-hosted Ubuntu passed all steps (run 36260934985, 2026-09-26, 53 s): lint, format, type-check, 45 tests against the service container, build |
 | `apps/web` placeholder shell | RUNS LOCALLY (dev server only) | unchanged since Phase 2 |
 | Everything else | NOT IMPLEMENTED | see phase table |
 
