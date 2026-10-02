@@ -17,8 +17,8 @@
     "db:seed": "prisma db seed"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1141.0",
-    "@aws-sdk/lib-storage": "^3.1141.0",
+    "@aws-sdk/client-s3": "^3.1142.0",
+    "@aws-sdk/lib-storage": "^3.1142.0",
     "@ecp/shared": "^0.1.0",
     "@node-rs/argon2": "^2.2.1",
     "@prisma/adapter-pg": "^7.10.0",
@@ -40,7 +40,7 @@
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
-    "@types/node": "^26.6.2",
+    "@types/node": "^26.6.3",
     "@types/supertest": "^7.2.1",
     "prisma": "^7.10.0",
     "supertest": "^7.3.0",
